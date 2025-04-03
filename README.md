@@ -1,4 +1,4 @@
-# MicroBox - Pembasmi Hama Monyet
+# MicroBox - Pengusir Hama Monyet
 
 ## Version Program
 - 1.0.0 - Alpha release

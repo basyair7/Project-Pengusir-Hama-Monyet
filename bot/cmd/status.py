@@ -101,7 +101,7 @@ class status:
         stats = status_instance.stats()  # Now we call stats() from the instance
         
         text = f"<b>System Information</b>\n"
-        text += f"<pre>Name\t: MicroBox - Pembasmi Hama Monyet\n"
+        text += f"<pre>Name\t: MicroBox - Pengusir Hama Monyet\n"
         text += f"Tanggal\t: {stats['date']} ({stats['time']})\n"
         text += f"Platform\t: {stats['model']}\n"
         text += f"CPU\t: {stats['cpu_info']}\n"
