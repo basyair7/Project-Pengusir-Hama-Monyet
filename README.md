@@ -17,11 +17,11 @@ sudo apt update
 2. **Install library python**:
 - if running on RPi:
 ```sh
-python3 -m pip install lib_rpi
+python3 -m pip install -r lib_rpi
 ```
 - if running on PC:
 ```sh
-python -m pip install lib_pc
+python -m pip install -r lib_pc
 ```
 3. **Running program**:
 ```sh
