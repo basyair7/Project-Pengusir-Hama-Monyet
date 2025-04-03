@@ -1,0 +1,7 @@
+.winenv/*
+.myenv/*
+.venv/*
+
+.env
+test.db
+database.db

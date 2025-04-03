@@ -1,0 +1,6 @@
+requests
+datetime
+RPi.GPIO2
+python-telegram-bot
+python-dotenv
+asyncio
