@@ -3,5 +3,6 @@
 .venv/*
 
 .env
+.env-old
 test.db
 database.db
