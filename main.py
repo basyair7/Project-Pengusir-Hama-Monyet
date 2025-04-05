@@ -21,7 +21,7 @@ copyright:
 
 import asyncio, threading, pygame, time
 from bot.telegram import TelegramBot
-from sensor.pir import Sensor
+from sensor.pir import SensorPir
 
 # Setup pygame for playsound
 playsound = pygame.mixer
@@ -32,7 +32,7 @@ playsound.music.load("alarm/alarm.wav")
 should_play = False
 
 # Initialize the PIR sensor with the pin numbers
-pirsensor = Sensor(17, 18, 19)
+pirsensor = SensorPir(17, 18, 19)
 pirsensor.setup()
 
 # Initialize the bot

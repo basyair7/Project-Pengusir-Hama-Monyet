@@ -21,7 +21,7 @@ copyright:
 
 import RPi.GPIO as GPIO
 
-class Sensor:
+class SensorPir:
     def __init__(self, *sensor_pins: int):
         """
         Initialize the sensor with the given pins, ensuring no duplicates.
