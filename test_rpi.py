@@ -19,9 +19,17 @@ copyright:
     along with this program. If not, see <https://www.gnu.org/licenses/>
 """
 
-import asyncio
+import asyncio, threading, pygame, time
 from bot.telegram import TelegramBot
 from sensor.pir import Sensor
+
+# Setup pygame for playsound
+playsound = pygame.mixer
+playsound.init()
+playsound.music.load("alarm/alarm.wav")
+
+# Sound Thread Control
+should_play = False
 
 # Initialize the PIR sensor with the pin numbers
 pirsensor = Sensor(17, 18, 19)
@@ -30,8 +38,20 @@ pirsensor.setup()
 # Initialize the bot
 bot = TelegramBot()
 
+def sound_loop():
+    global should_play
+    while True:
+        if (should_play and not playsound.music.get_busy()):
+            playsound.music.play(-1)
+            print("🔊 Sound started")
+        elif (not should_play and playsound.music.get_busy()):
+            playsound.music.stop()
+            print("🔇 Sound stopped")
+        time.sleep(0.1)
+
 # Function to monitor PIR sensor status
 async def monitor_pir():
+    global should_play
     while True:
         status = pirsensor.get_action()  # Get sensor statuses
         
@@ -43,6 +63,9 @@ async def monitor_pir():
             message = f"Sensor detected Monkey! ({sensor_active_count} sensor's detected motion)"
             # Send message with sensor data
             await bot.send_message(message, sensor_active=sensor_active_count)
+            should_play = True
+        else:
+            should_play = False
             
         # Wait for 5 seconds before checking again
         await asyncio.sleep(5)
@@ -53,6 +76,9 @@ async def main():
     asyncio.create_task(monitor_pir())
 
 if __name__ == "__main__":
+    sound_thread = threading.Thread(target=sound_loop, daemon=True)
+    sound_thread.start()
+    
     # Start the bot and run the event loop
     asyncio.get_event_loop().run_until_complete(main())
     bot.run()

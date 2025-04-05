@@ -4,4 +4,4 @@ RPi.GPIO
 python-telegram-bot
 python-dotenv
 asyncio
-simpleaudio
+pygame
