@@ -4,7 +4,6 @@ from bot.telegram import TelegramBot
 # Setup pygame for playsound
 playsound = pygame.mixer
 playsound.init()
-playsound.music.load("alarm/alarm.wav")
 
 # Sound Thread Control
 should_play = False
@@ -16,8 +15,12 @@ def sound_loop():
     global should_play
     while True:
         if should_play and not playsound.music.get_busy():
-            playsound.music.play(-1)
-            print("🔊 Sound started")
+            try:
+                playsound.music.load("alarm/alarm.wav")
+                playsound.music.play(-1)
+                print("🔊 Sound started")
+            except Exception as e:
+                print(f"⚠️ Failed to play sound: {e}")
         elif not should_play and playsound.music.get_busy():
             playsound.music.stop()
             print("🔇 Sound stopped")
