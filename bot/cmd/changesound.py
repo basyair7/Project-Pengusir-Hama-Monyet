@@ -35,8 +35,8 @@ from telegram.ext import CallbackContext
 from ..config import Config
 
 class changesound:
-    """Handles the /changesound command for replacing alarm sound file.
-    
+    """Handles the /changesound command for replacing alarm sound file."""
+    """
     Attributes:
         accepted_formats (tuple): Allowed file extensions for the sound file. waiting_chat (set): Chat IDs awaiting audio file input.
         
@@ -69,7 +69,7 @@ class changesound:
             except PermissionError:
                 print(f"[Retry {i+1}] File sedang digunakan. Menunggu...")
                 time.sleep(1)
-        print("❌ Gagal menghapus file: Permission denied")
+        print("Failed: Permission denied")
         return False
         
     @staticmethod
