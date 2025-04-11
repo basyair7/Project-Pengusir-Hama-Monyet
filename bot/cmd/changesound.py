@@ -92,6 +92,10 @@ class changesound:
         temp_path = f"alarm/temp{os.path.splitext(file_name)[1]}"
         final_path = "alarm/alarm.wav"
 
+        # Ensure alarm directory exists
+        os.makedirs("alarm", exist_ok=True)
+
+        # Download file
         await file.download_to_drive(temp_path)
 
         try:
