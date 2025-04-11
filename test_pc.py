@@ -7,12 +7,13 @@ playsound.init()
 
 # Sound Thread Control
 should_play = False
+error_play = False
 keyboard_sensor = False
 
 bot = TelegramBot()
 
 def sound_loop():
-    global should_play
+    global should_play, error_play
     while True:
         if should_play and not playsound.music.get_busy():
             try:
@@ -21,6 +22,7 @@ def sound_loop():
                 print("🔊 Sound started")
             except Exception as e:
                 print(f"⚠️ Failed to play sound: {e}")
+                error_play = True
         elif not should_play and playsound.music.get_busy():
             playsound.music.stop()
             print("🔇 Sound stopped")
@@ -37,10 +39,16 @@ def keyboard_simulator():
         time.sleep(0.1)
 
 async def monitor_pir():
-    global should_play
+    global should_play, error_play
     while True:
         if keyboard_sensor:
-            await bot.send_message("Sensor terdeteksi adanya Monyet!", 3)
+            if error_play:
+                message = "Failed to play alarm! please configuration /changesound"
+                message += f"\nSensor detected Monkey! (sensor's detected motion)"
+            else:    
+                message = f"Sensor detected Monkey! (sensor's detected motion)"
+            # Send message with sensor data
+            await bot.send_message(message, sensor_active=3)
             should_play = True
         else:
             should_play = False

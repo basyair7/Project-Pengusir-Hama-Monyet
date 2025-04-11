@@ -29,6 +29,7 @@ playsound.init()
 
 # Sound Thread Control
 should_play = False
+error_play = False
 
 # Initialize the PIR sensor with the pin numbers
 pirsensor = SensorPir(17, 18, 19)
@@ -38,7 +39,7 @@ pirsensor.setup()
 bot = TelegramBot()
 
 def sound_loop():
-    global should_play
+    global should_play, error_play
     while True:
         if (should_play and not playsound.music.get_busy()):
             try:
@@ -47,6 +48,7 @@ def sound_loop():
                 print("🔊 Sound started")
             except Exception as e:
                 print(f"⚠️ Failed to play sound: {e}")
+                error_play = True
         elif (not should_play and playsound.music.get_busy()):
             playsound.music.stop()
             print("🔇 Sound stopped")
@@ -54,7 +56,7 @@ def sound_loop():
 
 # Function to monitor PIR sensor status
 async def monitor_pir():
-    global should_play
+    global should_play, error_play
     while True:
         status = pirsensor.get_action()  # Get sensor statuses
         
@@ -63,7 +65,11 @@ async def monitor_pir():
         
         # Only send message if there's at least one active sensor
         if sensor_active_count > 0:
-            message = f"Sensor detected Monkey! ({sensor_active_count} sensor's detected motion)"
+            if error_play:
+                message = "Failed to play alarm! please configuration /changesound"
+                message += f"\nSensor detected Monkey! ({sensor_active_count} sensor's detected motion)"
+            else:    
+                message = f"Sensor detected Monkey! ({sensor_active_count} sensor's detected motion)"
             # Send message with sensor data
             await bot.send_message(message, sensor_active=sensor_active_count)
             should_play = True
@@ -71,7 +77,7 @@ async def monitor_pir():
             should_play = False
             
         # Wait for 5 seconds before checking again
-        await asyncio.sleep(5)
+        await asyncio.sleep(0.5)
 
 # Main async function to run the monitor
 async def main():
