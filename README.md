@@ -14,7 +14,17 @@
 ```sh
 sudo apt update
 ```
-2. **Install library python**:
+3. **Install CODEX FFMPEG**:
+- if running on windows:
+```
+1. Download on https://www.gyan.dev/ffmpeg/builds/
+2. add path to Environment variables
+```
+- if running on RPi:
+```
+sudo apt-get install ffmpeg -y
+```
+3. **Install library python**:
 - if running on RPi:
 ```sh
 python3 -m pip install -r lib_rpi
@@ -23,7 +33,7 @@ python3 -m pip install -r lib_rpi
 ```sh
 python -m pip install -r lib_pc
 ```
-3. **Running program**:
+4. **Running program**:
 ```sh
 python main.py
 ```
