@@ -6,3 +6,4 @@ python-dotenv
 asyncio
 pygame
 keyboard
+pydub
