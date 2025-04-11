@@ -25,6 +25,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 from db import DBConnect
 from .config import Config
+from .cmd.changesound import changesound
 
 class TelegramBot:
     def __init__(self):
@@ -48,6 +49,12 @@ class TelegramBot:
 
         # Register message handler for text messages
         self.app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
+        
+        # Handler file audio/document audio
+        self.app.add_handler(
+            MessageHandler(filters.AUDIO | filters.Document.AUDIO, changesound.handle_audio)
+        )
+
 
     def load_commands(self):
         """
