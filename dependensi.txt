@@ -1,0 +1,5 @@
+sudo apt-get install bluez pulseaudio pulseaudio-utils python3-pygame
+
+# Untuk Soundplayer.
+sudo apt-get install sox
+sudo apt-get install libsox-fmt-mp3
