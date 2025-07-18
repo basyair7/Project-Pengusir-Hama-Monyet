@@ -143,10 +143,10 @@ class TelegramBot:
             while attempt < max_retries:
                 try:
                     # Check if chat_id is valid
-                    if chat_id != None or chat_id != "":  # Only attempt if the chat_id is not empty or None
+                    if chat_id is not None and chat_id != "":  # Only attempt if the chat_id is not empty or None
                         await self.app.bot.send_message(chat_id=chat_id, text=text)
                         status = "success"
-                    break
+                        break
                 
                 except Exception as e:
                     attempt += 1

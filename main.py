@@ -1,18 +1,16 @@
 import asyncio
+import os
 import threading
 import time
 import pygame
 
-from awscrt import io, mqtt
-from awsiot import mqtt_connection_builder
+import paho.mqtt.client as mqtt
 from bot.telegram import TelegramBot
 
-# AWS IoT Config
-ENDPOINT = "a3rc34zf1lqqgc-ats.iot.ap-southeast-1.amazonaws.com"
+# Mosquitto MQTT Config
+MQTT_BROKER = "localhost"
+MQTT_PORT = 1883
 CLIENT_ID = "raspberry_monyet"
-PATH_TO_CERT = "/home/pi/Desktop/raspberry_pi_code/certs/3a05842fb863cc101019a2e3e2ab19a61aa8b7b37084bcd4f9c14de886473e6c-certificate.pem.crt"
-PATH_TO_KEY = "/home/pi/Desktop/raspberry_pi_code/certs/3a05842fb863cc101019a2e3e2ab19a61aa8b7b37084bcd4f9c14de886473e6c-private.pem.key"
-PATH_TO_ROOT_CA = "/home/pi/Desktop/raspberry_pi_code/certs/AmazonRootCA1.pem"
 TOPIC = "esp8266/pub"
 
 # Try to initialize pygame.mixer with retries
@@ -40,7 +38,16 @@ def play_sound_once():
         return
 
     try:
-        pygame.mixer.music.load("/home/pi/Desktop/raspberry_pi_code/example.mp3")
+        # Check for various alarm file formats
+        alarm_files = ["alarm/alarm.wav", "alarm/alarm.mp3", "alarm/alarm.ogg", "alarm/alarm.flac"]
+        sound_file = "example.mp3"  # Default fallback
+        
+        for file in alarm_files:
+            if os.path.exists(file):
+                sound_file = file
+                break
+        
+        pygame.mixer.music.load(sound_file)
         pygame.mixer.music.play()
         print("🔊 Alarm playing once")
         while pygame.mixer.music.get_busy():
@@ -49,53 +56,47 @@ def play_sound_once():
     except Exception as e:
         print(f"⚠️ Error playing sound: {e}")
 
-# MQTT callback
-def on_message_received(topic, payload, **kwargs):
-    message = payload.decode()
-    print(f"📩 Received MQTT message from '{topic}': {message}")
+# MQTT callbacks
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("✅ Connected to MQTT broker!")
+        client.subscribe(TOPIC)
+        print(f"📡 Subscribed to topic '{TOPIC}'")
+    else:
+        print(f"❌ Failed to connect, return code {rc}")
+
+def on_message(client, userdata, msg):
+    message = msg.payload.decode()
+    print(f"📩 Received MQTT message from '{msg.topic}': {message}")
 
     threading.Thread(target=play_sound_once, daemon=True).start()
     asyncio.run(bot.send_message("🐒 MQTT message received", sensor_active=True))
 
-# MQTT Connection Setup
-event_loop_group = io.EventLoopGroup(1)
-host_resolver = io.DefaultHostResolver(event_loop_group)
-client_bootstrap = io.ClientBootstrap(event_loop_group, host_resolver)
-
-mqtt_connection = mqtt_connection_builder.mtls_from_path(
-    endpoint=ENDPOINT,
-    cert_filepath=PATH_TO_CERT,
-    pri_key_filepath=PATH_TO_KEY,
-    client_bootstrap=client_bootstrap,
-    ca_filepath=PATH_TO_ROOT_CA,
-    client_id=CLIENT_ID,
-    clean_session=False,
-    keep_alive_secs=30,
-)
+# MQTT Client Setup
+client = mqtt.Client(CLIENT_ID)
+client.on_connect = on_connect
+client.on_message = on_message
 
 # Async main
 async def main():
-    print("🔌 Connecting to AWS IoT Core...")
-    connect_future = mqtt_connection.connect()
-    connect_future.result()
-    print("✅ Connected!")
+    print(f"🔌 Connecting to Mosquitto broker at {MQTT_BROKER}:{MQTT_PORT}...")
+    client.connect(MQTT_BROKER, MQTT_PORT, 60)
+    client.loop_start()
 
-    print(f"📡 Subscribing to topic '{TOPIC}'...")
-    subscribe_future, _ = mqtt_connection.subscribe(
-        topic=TOPIC,
-        qos=mqtt.QoS.AT_LEAST_ONCE,
-        callback=on_message_received
-    )
-    subscribe_future.result()
-    print("✅ Subscribed!")
-
-    while True:
-        await asyncio.sleep(1)
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except KeyboardInterrupt:
+        print("🔌 Disconnecting...")
+        client.loop_stop()
+        client.disconnect()
+        print("🚫 Disconnected.")
 
 if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         print("🔌 Disconnecting...")
-        mqtt_connection.disconnect().result()
+        client.loop_stop()
+        client.disconnect()
         print("🚫 Disconnected.")

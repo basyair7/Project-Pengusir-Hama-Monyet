@@ -1,4 +1,4 @@
-awsiotsdk
 pygame
-awscert
-sqlite
+paho-mqtt
+python-telegram-bot
+python-dotenv

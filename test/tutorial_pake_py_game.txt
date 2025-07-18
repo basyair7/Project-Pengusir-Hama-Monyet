@@ -1,1 +1,0 @@
-https://www.jeffgeerling.com/blog/2022/playing-sounds-python-on-raspberry-pi

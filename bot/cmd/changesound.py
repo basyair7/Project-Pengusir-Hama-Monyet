@@ -28,8 +28,7 @@ Copyright:
     along with this program. If not, see <https://www.gnu.org/licenses/>
 """
 
-import os, time
-from pydub import AudioSegment
+import os, time, shutil
 from telegram import Update
 from telegram.ext import CallbackContext
 from ..config import Config
@@ -46,7 +45,7 @@ class changesound:
     """
     
     waiting_chats = set()
-    accepted_formats = ('.wav', '.mp3')
+    accepted_formats = ('.wav', '.mp3', '.ogg', '.flac')
     
     def __init__(self):
         botconfig = Config()
@@ -58,7 +57,7 @@ class changesound:
         """Starts the sound change process by prompting user for file."""
         chat_id = update.message.chat_id
         changesound.waiting_chats.add(chat_id)
-        await update.message.reply_text("Please send a sound file (.wav or .mp3) to replace the alarm.")
+        await update.message.reply_text("Please send a sound file (.wav, .mp3, .ogg, or .flac) to replace the alarm.")
         
     @staticmethod    
     def safe_delete(file_path):
@@ -85,26 +84,21 @@ class changesound:
         
         file_name = audio.file_name
         if not file_name.lower().endswith(changesound.accepted_formats):
-            await update.message.reply_text("Formats not supported. Please send .wav or .mp3 files")
+            await update.message.reply_text("Formats not supported. Please send .wav, .mp3, .ogg, or .flac files")
             return
         
         file = await context.bot.get_file(audio.file_id)
-        temp_path = f"alarm/temp{os.path.splitext(file_name)[1]}"
-        final_path = "alarm/alarm.wav"
+        file_ext = os.path.splitext(file_name)[1].lower()
+        final_path = f"alarm/alarm{file_ext}"
 
         # Ensure alarm directory exists
         os.makedirs("alarm", exist_ok=True)
 
-        # Download file
-        await file.download_to_drive(temp_path)
-
+        # Download file directly to final destination
         try:
-            sound = AudioSegment.from_file(temp_path)
-            sound.export(final_path, format="wav")
-            # os.remove(temp_path)
-            changesound.safe_delete(temp_path)
+            await file.download_to_drive(final_path)
         except Exception as e:
-            await update.message.reply_text(f"Failed to convert sound: {e}")
+            await update.message.reply_text(f"Failed to download sound: {e}")
             return
             
         changesound.waiting_chats.remove(chat_id)
