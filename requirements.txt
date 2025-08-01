@@ -2,3 +2,5 @@ pygame
 paho-mqtt
 python-telegram-bot
 python-dotenv
+requests
+aiohttp
