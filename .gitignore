@@ -1,2 +1,5 @@
+database.db
+.env-old
 venv/
+.venv
 .env
