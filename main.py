@@ -93,10 +93,8 @@ async def main():
         print("🚫 Disconnected.")
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("🔌 Disconnecting...")
-        client.loop_stop()
-        client.disconnect()
-        print("🚫 Disconnected.")
+    mqtt_thread = threading.Thread(target=lambda: asyncio.run(main()), daemon=True)
+    mqtt_thread.start()
+    print("🐒 MQTT client started in background thread")
+    
+    bot.run()  # Start Telegram bot in the main thread
