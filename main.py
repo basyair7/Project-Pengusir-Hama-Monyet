@@ -3,9 +3,10 @@ import os
 import threading
 import time
 import pygame
-
+import json
 import paho.mqtt.client as mqtt
 from bot.telegram import TelegramBot
+from utility.sound_control import is_sound_enabled
 
 # Mosquitto MQTT Config
 MQTT_BROKER = "localhost"
@@ -35,6 +36,10 @@ bot = TelegramBot()
 def play_sound_once():
     if not audio_ready:
         print("🔇 Skipping sound playback, audio device not ready")
+        return
+    
+    if not is_sound_enabled():
+        print("🔇 Sound is disabled, skipping playback")
         return
 
     try:
@@ -69,8 +74,25 @@ def on_message(client, userdata, msg):
     message = msg.payload.decode()
     print(f"📩 Received MQTT message from '{msg.topic}': {message}")
 
-    threading.Thread(target=play_sound_once, daemon=True).start()
-    asyncio.run(bot.send_message("🐒 MQTT message received", sensor_active=True))
+    # threading.Thread(target=play_sound_once, daemon=True).start()
+    # asyncio.run(bot.send_message("🐒 MQTT message received", sensor_active=True))
+    
+    try:
+        data = json.loads(message)
+        motion = data.get("motion")
+        sensor_id = data.get("sensorid")
+        timestamp = data.get("time")
+        core = data.get("core")
+        sensitivity = data.get("sensitivity")
+        
+        print(f"📊 Parsed data - Motion: {motion}, Sensor ID: {sensor_id}, Time: {timestamp}, Core: {core}, Sensitivity: {sensitivity}")
+        
+        if (motion):
+            threading.Thread(target=play_sound_once, daemon=True).start()
+            asyncio.run(bot.send_message(f"🐒 Motion detected by sensor {sensor_id} at {timestamp}", sensor_active=sensor_id))
+        
+    except json.JSONDecodeError:
+        print("⚠️ Invalid JSON received, ignoring message")
 
 # MQTT Client Setup
 client = mqtt.Client(CLIENT_ID)
