@@ -1,4 +1,4 @@
 #!/bin/bash
-cd /home/pi/Desktop/raspberry_pi_code
+cd /home/pi/Desktop/Project-Pengusir-Hama-Monyet
 source ./venv/bin/activate
 python main.py
