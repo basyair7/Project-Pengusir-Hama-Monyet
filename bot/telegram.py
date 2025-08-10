@@ -174,7 +174,8 @@ class TelegramBot:
     def run(self):
         """Start the bot and listen for incoming updates."""
         print("Bot is running...")
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(self.app.run_polling())
-        loop.run_forever()
+        self.app.run_polling()
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
+        # loop.run_until_complete(self.app.run_polling())
+        # loop.run_forever()
