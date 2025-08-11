@@ -4,6 +4,7 @@ import threading
 import time
 import pygame
 import json
+import requests
 import paho.mqtt.client as mqtt
 from bot.telegram import TelegramBot
 from utility.sound_control import is_sound_enabled
@@ -13,6 +14,53 @@ MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 CLIENT_ID = "raspberry_monyet"
 TOPIC = "esp8266/pub"
+
+bot = None
+bot_thread = None
+bot_running = False
+internet_lock = threading.Lock()
+
+def check_internet(timeout: int=3):
+    """Check if the internet is reachable."""
+    try:
+        requests.get("https://api.telegram.org", timeout=timeout)
+        return True
+    except requests.RequestException as e:
+        print(f"⚠️ Internet check failed: {e}")
+        return False
+    
+def bot_runner():
+    """Run the Telegram bot in a separate thread."""
+    global bot_running
+    bot_running = True
+    while bot_running:
+        try:
+            bot.run()
+        except Exception as e:
+            print(f"⚠️ Bot error: {e}")
+        finally:
+            bot_running = False
+            print("⛔ Bot stopped")
+
+def internet_monitor():
+    """Monitor internet connectivity and restart bot if needed."""
+    global bot_running, bot_thread, bot
+    while True:
+        if check_internet():
+            if not bot_running:
+                with internet_lock:
+                    print("🌐 Internet connected — starting Telegram bot...")
+                    bot = TelegramBot()
+                    bot_thread = threading.Thread(target=bot_runner, daemon=True)
+                    bot_thread.start()
+                    bot_running = True
+        else:
+            if bot_running:
+                print("📴 Internet disconnected — stopping Telegram bot...")
+                # Tidak ada cara resmi "stop" python-telegram-bot, jadi rely on reconnect
+                # atau biarkan timeout otomatis
+                bot_running = False
+        time.sleep(5)  # Check every 5 seconds
 
 # Try to initialize pygame.mixer with retries
 def init_audio_with_retry(retries=5, delay=5):
@@ -119,4 +167,20 @@ if __name__ == "__main__":
     mqtt_thread.start()
     print("🐒 MQTT client started in background thread")
     
-    bot.run()  # Start Telegram bot in the main thread
+    # Start internet monitor in a separate thread
+    internet_thread = threading.Thread(target=internet_monitor, daemon=True)
+    internet_thread.start()
+    print("🌐 Internet monitor started in background thread")
+    
+    # MQTT & internet monitor threads will run indefinitely
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("🔌 Shutting down...")
+        bot_running = False
+        if bot_thread:
+            bot_thread.join()
+        mqtt_thread.join()
+        internet_thread.join()
+        print("✅ Shutdown complete.")
