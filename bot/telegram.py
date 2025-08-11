@@ -171,10 +171,33 @@ class TelegramBot:
         # Send messages to all chat_ids in parallel
         await asyncio.gather(*(send_to_user(chat_id) for chat_id in self.chat_ids))
         
+    def check_internet(host="8.8.8.8", port=53, timeout=3):
+        """Check if the internet connection is available by pinging a reliable host."""
+        import socket
+        try:
+            socket.setdefaulttimeout(timeout)
+            socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+            return True
+        except Exception as e:
+            return False
+        
     def run(self):
         """Start the bot and listen for incoming updates."""
         print("Bot is running...")
-        self.app.run_polling()
+        
+        # Loop until internet is available
+        while True:
+            if self.check_internet():
+                print("Internet connection is available. Starting bot...")
+                try:
+                    self.app.run_polling()
+                except Exception as e:
+                    print(f"Error while running the bot: {e}")
+                    print("Restarting bot in 5 seconds...")
+                    asyncio.sleep(5)
+            else:
+                print("No internet connection. Retrying in 5 seconds...")
+                asyncio.sleep(5)
         # loop = asyncio.new_event_loop()
         # asyncio.set_event_loop(loop)
         # loop.run_until_complete(self.app.run_polling())
