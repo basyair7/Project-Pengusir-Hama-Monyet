@@ -19,7 +19,7 @@ copyright:
     along with this program. If not, see <https://www.gnu.org/licenses/>
 """
 
-import os, importlib, asyncio
+import os, importlib, asyncio, time
 from datetime import datetime
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
@@ -194,10 +194,10 @@ class TelegramBot:
                 except Exception as e:
                     print(f"Error while running the bot: {e}")
                     print("Restarting bot in 5 seconds...")
-                    asyncio.sleep(5)
+                    time.sleep(5)
             else:
                 print("No internet connection. Retrying in 5 seconds...")
-                asyncio.sleep(5)
+                time.sleep(5)
         # loop = asyncio.new_event_loop()
         # asyncio.set_event_loop(loop)
         # loop.run_until_complete(self.app.run_polling())
