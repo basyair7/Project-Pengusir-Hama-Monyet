@@ -1,0 +1,7 @@
+1. open terminal
+2. sudo crontab -e
+3. select 1 "nano edition"
+4. add new command
+@reboot bash -l /home/pi/Desktop/Project-Pengusir-Hama-Monyet/run_app.sh >> /home/pi/Desktop/log.txt 2>&1
+
+5. save and reboot
