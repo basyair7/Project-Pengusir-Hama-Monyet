@@ -1,5 +1,5 @@
 pygame
-paho-mqtt
+paho-mqtt<2.0
 python-telegram-bot
 python-dotenv
 requests
