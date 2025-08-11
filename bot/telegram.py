@@ -171,7 +171,7 @@ class TelegramBot:
         # Send messages to all chat_ids in parallel
         await asyncio.gather(*(send_to_user(chat_id) for chat_id in self.chat_ids))
         
-    def check_internet(host="8.8.8.8", port=53, timeout=3):
+    def check_internet(self, host="8.8.8.8", port=53, timeout=3):
         """Check if the internet connection is available by pinging a reliable host."""
         import socket
         try:
