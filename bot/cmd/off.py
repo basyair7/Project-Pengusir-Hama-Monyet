@@ -27,19 +27,22 @@ Copyright:
 
 from telegram import Update
 from telegram.ext import CallbackContext
-from utility.sound_control import is_sound_enabled, set_sound_enabled
+from utility.sound_control import sound_control
 
 class off:
     """Handles the /off command to disable sound playback."""
     @staticmethod
     async def command(update: Update, context: CallbackContext):
+        # Create an instance of sound_control
+        sound_ctrl = sound_control()
+        # Get the chat ID from the update
         chat_id = update.message.chat_id
         
         # Check if sound is already disabled
-        if not is_sound_enabled():
+        if not sound_ctrl.is_sound_enabled():
             await context.bot.send_message(chat_id=chat_id, text="🔇 Sound is already disabled.")
             return
         
         # Disable sound
-        set_sound_enabled(False)
+        sound_ctrl.set_sound_enabled(False)
         await context.bot.send_message(chat_id=chat_id, text="🔇 Sound has been disabled.")
