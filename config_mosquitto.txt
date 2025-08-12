@@ -1,0 +1,43 @@
+Enable Mosquitto MQTT Broker Access from Local Network (LAN)
+===========================================================
+
+1. Connect to your Raspberry Pi via SSH or terminal.
+
+2. Edit the Mosquitto configuration file:
+   sudo nano /etc/mosquitto/mosquitto.conf
+
+3. Add the following lines at the bottom of the file:
+
+   listener 1883
+   allow_anonymous true
+
+   Notes:
+   - "listener 1883" makes Mosquitto listen for connections on the default MQTT port (1883) from any network interface.
+   - "allow_anonymous true" allows clients to connect without authentication (for testing only).
+
+4. Save the file and exit (Ctrl+O, Enter, Ctrl+X in nano).
+
+5. Restart the Mosquitto service:
+   sudo systemctl restart mosquitto
+
+6. Test locally on Raspberry Pi:
+   - Terminal 1: 
+     mosquitto_sub -h 192.168.x.x -t "test"
+   - Terminal 2:
+     mosquitto_pub -h 192.168.x.x -t "test" -m "hello from Raspberry Pi"
+
+7. Test from another device on the same network (e.g., WSL, PC, ESP32):
+   mosquitto_pub -h 192.168.x.x -t "test" -m "hello from LAN client"
+
+8. If the connection still fails:
+   - Check Raspberry Pi's firewall (ufw/iptables).
+   - Make sure port 1883 is not blocked.
+   - Ensure both devices are in the same subnet.
+
+Security Reminder:
+==================
+"allow_anonymous true" is not secure for production use.
+For secure setups:
+- Use username/password authentication.
+- Enable TLS encryption.
+- Restrict access to trusted IP addresses.
