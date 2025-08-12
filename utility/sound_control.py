@@ -19,7 +19,7 @@ copyright:
     along with this program. If not, see <https://www.gnu.org/licenses/>
 """
 
-SOUND_FILE = "sound.txt"
+SOUND_FILE = "utility/sound.txt"
 
 def is_sound_enabled():
     """Check if sound is enabled by reading from a file."""
