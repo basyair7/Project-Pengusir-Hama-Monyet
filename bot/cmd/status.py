@@ -28,7 +28,7 @@ Copyright:
     along with this program. If not, see <https://www.gnu.org/licenses/>
 """
 
-import os, platform
+import os, platform, subprocess, re
 from datetime import datetime
 from telegram import Update
 from telegram.ext import CallbackContext
@@ -54,6 +54,30 @@ class status:
         """Returns the operating system of the current system."""
         return platform.system()
     
+    def ping_google(self):
+        """Pings Google to check internet connectivity.
+        
+        Returns:
+            bool: True if the ping is successful, False otherwise.
+        """
+        try:
+            # Use the appropriate ping command based on the OS
+            if platform.system().lower() == "windows":
+                cmd = ["ping", "-n", "1", "8.8.8.8"]
+            else:
+                cmd = ["ping", "-c", "1", "8.8.8.8"]
+            
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)
+            
+            # Check if the output contains a successful ping response
+            match = re.search(r"time[=<]([\d\.]+)\s*ms", output)
+            if match:
+                return f"{match.group(1)} ms"
+            else:
+                return "Timeout"
+        except subprocess.CalledProcessError:
+            return "Ping failed"
+    
     def stats(self):
         """Fetches system status details.
         
@@ -62,25 +86,34 @@ class status:
                   CPU information, model, kernel version, and OS.
         """
         
+        # Get the current date and time
         now = datetime.now()
         date = now.strftime("%A, %B, %d, %Y")
         time = now.strftime("%H:%M:%S")
         
+        # Get system information
         sys_info = platform.uname()
         cpu_info = os.cpu_count()
         model = f"{sys_info.processor} {sys_info.machine}"
+        
+        # Determine the kernel version based on the operating system
         if sys_info.system == "Windows":
             kernel = platform.version()
         else:
             kernel = sys_info.release
         
+        # Check internet connectivity by pinging Google
+        ping_result = self.ping_google()
+        
+        # Return the collected information as a dictionary
         return {
             "date": date, 
             "time": time,
             "cpu_info": f"{cpu_info} cores",
             "model": model,
             "kernel": kernel,
-            "os": self.get_os()
+            "os": self.get_os(),
+            "ping": ping_result
         }
         
     @staticmethod
