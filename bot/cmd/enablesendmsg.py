@@ -86,4 +86,4 @@ class enablesendmsg:
         save_id = enablesendmsg()
         chat_id = update.message.chat_id
         save_id.store_chatID(chat_id=chat_id)
-        await update.message.reply_text("Auto send message is enabled now")
+        await context.bot.send_message(chat_id=chat_id, text="✅ Automatic message sending has been enabled for this chat.")

@@ -86,4 +86,4 @@ class disablesendmsg:
         remove_id = disablesendmsg()
         chat_id = update.message.chat_id
         remove_id.remove_chatID(chat_id=chat_id)
-        await update.message.reply_text("Auto send message is disabled now")
+        await context.bot.send_message(chat_id=chat_id, text="🚫 Automatic message sending has been disabled for this chat.")
