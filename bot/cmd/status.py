@@ -141,4 +141,5 @@ class status:
         text += f"OS\t: {stats['os']}\n"
         text += f"Kernel\t: {stats['kernel']}\n"
         text += f"Status\t: Online</pre>"
+        text += f"\n<b>Ping</b>: {stats['ping']}\n"
         await update.message.reply_text(parse_mode='html', text=text)
