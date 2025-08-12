@@ -1,3 +1,4 @@
+alarm/*
 database.db
 .env-old
 venv/
