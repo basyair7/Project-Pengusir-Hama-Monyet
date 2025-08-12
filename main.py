@@ -96,7 +96,7 @@ def on_message(client, userdata, msg):
         print(f"📊 Parsed data - Motion: {motion}, Sensor ID: {sensor_id}, Time: {timestamp}, Core: {core}, Sensitivity: {sensitivity}")
         
         if (motion):
-            threading.Thread(target=play_sound_once, daemon=True).start()
+            play_sound_once()
             asyncio.run(bot.send_message(f"🐒 Motion detected by sensor {sensor_id} at {timestamp}", sensor_active=sensor_id))
         
     except json.JSONDecodeError:
