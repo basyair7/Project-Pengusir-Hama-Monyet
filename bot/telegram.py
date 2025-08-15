@@ -19,7 +19,7 @@ copyright:
     along with this program. If not, see <https://www.gnu.org/licenses/>
 """
 
-import os, importlib, asyncio, time
+import os, importlib, asyncio, time, socket
 from datetime import datetime
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
@@ -173,7 +173,6 @@ class TelegramBot:
         
     def check_internet(self, host="8.8.8.8", port=53, timeout=3):
         """Check if the internet connection is available by pinging a reliable host."""
-        import socket
         try:
             socket.setdefaulttimeout(timeout)
             socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
