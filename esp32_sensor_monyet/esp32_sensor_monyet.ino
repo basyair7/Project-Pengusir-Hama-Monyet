@@ -7,7 +7,7 @@
 #include "secrets.h"  // Contains WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, THINGNAME, cacert, client_cert, privkey
 
 #define TIME_ZONE -5
-#define PIR_PIN 27  // GPIO pin (e.g., 27)
+#define PIR_PIN 16  // GPIO pin
 
 #define MQTT_PUBLISH_TOPIC "esp8266/pub"
 #define WDT_TIMEOUT 10  // 10 seconds watchdog timeout
@@ -203,46 +203,78 @@ void mqttTask(void *pvParameters) {
 }
 
 // ========== Sensor Task (runs on Core 1) ==========
+// void sensorTask(void *pvParameters) {
+//   const TickType_t xDelay = 50 / portTICK_PERIOD_MS;  // 50ms delay
+//   int lastPirState = LOW;
+  
+//   // Add this task to watchdog
+//   esp_task_wdt_add(NULL);
+  
+//   while (true) {
+//     // Reset watchdog timer
+//     esp_task_wdt_reset();
+    
+//     int currentPirState = digitalRead(PIR_PIN);
+//     unsigned long currentTime = millis();
+    
+//     if (currentPirState == HIGH && lastPirState == LOW) {
+//       xSemaphoreTake(xMutex, portMAX_DELAY);
+//       unsigned long timeSinceLastMotion = currentTime - lastMotionTime;
+//       unsigned long currentDebounceTime = motionDebounceTime;
+//       xSemaphoreGive(xMutex);
+      
+//       // Check if enough time has passed since last motion
+//       if (timeSinceLastMotion >= currentDebounceTime) {
+//         Serial.println("Motion detected!");
+        
+//         xSemaphoreTake(xMutex, portMAX_DELAY);
+//         motionDetected = true;
+//         lastMotionTime = currentTime;
+//         xSemaphoreGive(xMutex);
+//       }
+//     }
+    
+//     lastPirState = currentPirState;
+//     vTaskDelay(xDelay);
+//   }
+// }
+
 void sensorTask(void *pvParameters) {
   const TickType_t xDelay = 50 / portTICK_PERIOD_MS;  // 50ms delay
-  int lastPirState = LOW;
+  // int lastButtonState = HIGH;
   
-  // Add this task to watchdog
-  esp_task_wdt_add(NULL);
+  esp_task_wdt_add(NULL); // tambahkan ke WDT
   
   while (true) {
-    // Reset watchdog timer
     esp_task_wdt_reset();
     
-    int currentPirState = digitalRead(PIR_PIN);
-    unsigned long currentTime = millis();
+    bool value = digitalRead(PIR_PIN);
     
-    if (currentPirState == HIGH && lastPirState == LOW) {
-      xSemaphoreTake(xMutex, portMAX_DELAY);
-      unsigned long timeSinceLastMotion = currentTime - lastMotionTime;
-      unsigned long currentDebounceTime = motionDebounceTime;
-      xSemaphoreGive(xMutex);
+    // cek kalau tombol baru ditekan
+    if (value == LOW) {
+      Serial.println("Button pressed!");
+      digitalWrite(LED_BUILTIN, HIGH);
       
-      // Check if enough time has passed since last motion
-      if (timeSinceLastMotion >= currentDebounceTime) {
-        Serial.println("Motion detected!");
-        
-        xSemaphoreTake(xMutex, portMAX_DELAY);
-        motionDetected = true;
-        lastMotionTime = currentTime;
-        xSemaphoreGive(xMutex);
-      }
+      xSemaphoreTake(xMutex, portMAX_DELAY);
+      motionDetected = true;
+      lastMotionTime = millis();
+      xSemaphoreGive(xMutex);
+    }
+    else {
+      digitalWrite(LED_BUILTIN, LOW);
     }
     
-    lastPirState = currentPirState;
+    // lastButtonState = currentButtonState;
     vTaskDelay(xDelay);
   }
 }
 
+
 // ========== Setup ==========
 void setup() {
   Serial.begin(115200);
-  pinMode(PIR_PIN, INPUT);
+  pinMode(PIR_PIN, INPUT_PULLUP);
+  pinMode(LED_BUILTIN, OUTPUT);
   
   // Initialize watchdog timer with new API
   esp_task_wdt_config_t twdt_config = {
